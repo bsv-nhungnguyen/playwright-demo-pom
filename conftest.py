@@ -28,26 +28,26 @@ def page():
         context.close()
         browser.close()
 
-@pytest.fixture(scope="function", params=["chromium", "firefox", "webkit"])
-def browser(request):
-    browser_type = request.param
-    headless = False 
-    with sync_playwright() as p:
-        if browser_type == "chromium":
-            browser = p.chromium.launch(headless=headless)
-        elif browser_type == "firefox":
-            browser = p.firefox.launch(headless=headless)
-        elif browser_type == "webkit":
-            browser = p.webkit.launch(headless=headless)
-        else:
-            raise ValueError(f"Unsupported browser: {browser_type}")
-        context = browser.new_context()
-        page = context.new_page()
-        yield page
+# @pytest.fixture(scope="function", params=["chromium", "firefox", "webkit"])
+# def browser(request):
+#     browser_type = request.param
+#     headless = False 
+#     with sync_playwright() as p:
+#         if browser_type == "chromium":
+#             browser = p.chromium.launch(headless=headless)
+#         elif browser_type == "firefox":
+#             browser = p.firefox.launch(headless=headless)
+#         elif browser_type == "webkit":
+#             browser = p.webkit.launch(headless=headless)
+#         else:
+#             raise ValueError(f"Unsupported browser: {browser_type}")
+#         context = browser.new_context()
+#         page = context.new_page()
+#         yield page
 
-        context.close()
-        browser.close()
-        
+#         context.close()
+#         browser.close()
+
 @pytest.fixture(scope="function")
 def open_login_page(page):
     login_page = LoginPage(page)
