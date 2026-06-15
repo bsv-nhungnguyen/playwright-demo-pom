@@ -1,0 +1,1 @@
+ERROR_LOGIN_FAILED = "ログインに失敗しました。"
