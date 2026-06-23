@@ -7,6 +7,9 @@ class LoginPage:
     @allure.step("Input username: {username}")
     def input_username(self, username):
         self.page.fill(lg_locators.INPUT_USERNAME, username)
+    @allure.step("conflict code demo_001")
+    def input_username_01(self, username):
+        self.page.fill(lg_locators.INPUT_USERNAME, username)
 
     @allure.step("Input password: {password}")
     def input_password(self, password):
@@ -21,3 +24,6 @@ class LoginPage:
         self.input_username(username)
         self.input_password(password)
         self.click_login_button()
+    
+
+
