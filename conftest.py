@@ -8,6 +8,9 @@ import allure
 _PROJECT_ROOT = Path(__file__).parent
 dotenv.load_dotenv(_PROJECT_ROOT / '.env')
 
+
+
+
 @pytest.fixture(scope="function")
 def page():
     browser = "chromium"
