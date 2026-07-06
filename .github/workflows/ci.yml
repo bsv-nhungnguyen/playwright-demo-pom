@@ -6,6 +6,29 @@ on:
       - main
       - master
   pull_request:
+  workflow_dispatch:
+    inputs:
+      test_target:
+        description: "Test file hoặc node id muốn chạy (vd: tests/test_login.py hoặc tests/test_login.py::TestLogin::test_login_with_invalid_credentials). Để trống = chạy tất cả."
+        required: false
+        default: ""
+      keyword:
+        description: "Lọc theo tên (pytest -k), vd: login hoặc invalid. Để trống = không lọc."
+        required: false
+        default: ""
+      marker:
+        description: "Lọc theo marker (pytest -m), vd: smoke. Để trống = không lọc."
+        required: false
+        default: ""
+      browser:
+        description: "Trình duyệt chạy test"
+        required: false
+        default: chromium
+        type: choice
+        options:
+          - chromium
+          - firefox
+          - webkit
 
 jobs:
   test:
@@ -26,13 +49,24 @@ jobs:
           pip install -r requirements.txt
 
       - name: Install Playwright browsers
-        run: python -m playwright install --with-deps chromium
+        env:
+          BROWSER: ${{ github.event.inputs.browser || 'chromium' }}
+        run: python -m playwright install --with-deps "$BROWSER"
 
       - name: Run tests
         env:
           HEADLESS: "true"
-          BROWSER: chromium
-        run: pytest
+          BROWSER: ${{ github.event.inputs.browser || 'chromium' }}
+          TEST_TARGET: ${{ github.event.inputs.test_target }}
+          TEST_KEYWORD: ${{ github.event.inputs.keyword }}
+          TEST_MARKER: ${{ github.event.inputs.marker }}
+        run: |
+          args=()
+          [ -n "$TEST_TARGET" ] && args+=("$TEST_TARGET")
+          [ -n "$TEST_KEYWORD" ] && args+=(-k "$TEST_KEYWORD")
+          [ -n "$TEST_MARKER" ] && args+=(-m "$TEST_MARKER")
+          echo "Running: pytest ${args[*]}"
+          pytest "${args[@]}"
 
       - name: Install Allure CLI
         run: npm install -g allure-commandline
