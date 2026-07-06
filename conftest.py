@@ -13,17 +13,17 @@ dotenv.load_dotenv(_PROJECT_ROOT / '.env')
 
 @pytest.fixture(scope="function")
 def page():
-    browser = "chromium"
-    headless = False 
+    browser_name = os.getenv("BROWSER", "chromium").lower()
+    headless = os.getenv("HEADLESS", "true").lower() in {"1", "true", "yes", "on"}
     with sync_playwright() as p:
-        if browser == "chromium":
+        if browser_name == "chromium":
             browser = p.chromium.launch(headless=headless)
-        elif browser == "firefox":
+        elif browser_name == "firefox":
             browser = p.firefox.launch(headless=headless)
-        elif browser == "webkit":
+        elif browser_name == "webkit":
             browser = p.webkit.launch(headless=headless)
         else:
-            raise ValueError(f"Unsupported browser: {browser}")
+            raise ValueError(f"Unsupported browser: {browser_name}")
         context = browser.new_context()
         page = context.new_page()
         yield page
