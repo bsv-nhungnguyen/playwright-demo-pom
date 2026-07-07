@@ -53,8 +53,11 @@ def page():
 
 @pytest.fixture(scope="function")
 def open_login_page(page):
+    base_url = os.getenv('BASE_URL')
+    if not base_url:
+        pytest.fail("BASE_URL is not set (check .env locally or CI env/secrets)")
     login_page = LoginPage(page)
-    login_page.page.goto(os.getenv('BASE_URL'))
+    login_page.page.goto(base_url)
     yield login_page
 
 
