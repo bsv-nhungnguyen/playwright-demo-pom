@@ -53,10 +53,16 @@ jobs:
           BROWSER: ${{ github.event.inputs.browser || 'chromium' }}
         run: python -m playwright install --with-deps "$BROWSER"
 
+      - name: Install Allure CLI
+        run: npm install -g allure-commandline
+
       - name: Run tests
         env:
           HEADLESS: "true"
           BROWSER: ${{ github.event.inputs.browser || 'chromium' }}
+          BASE_URL: ${{ secrets.BASE_URL || 'https://bsv-test-phi2.eventos.work/console/login' }}
+          USERNAME: ${{ secrets.TEST_USERNAME }}
+          PASSWORD: ${{ secrets.TEST_PASSWORD }}
           TEST_TARGET: ${{ github.event.inputs.test_target }}
           TEST_KEYWORD: ${{ github.event.inputs.keyword }}
           TEST_MARKER: ${{ github.event.inputs.marker }}
@@ -68,13 +74,10 @@ jobs:
           echo "Running: pytest ${args[*]}"
           pytest "${args[@]}"
 
-      - name: Install Allure CLI
-        run: npm install -g allure-commandline
-
-      - name: Generate Allure report
+      - name: Generate Allure report (single file)
         if: always()
         run: |
-          allure generate allure-results -o allure-report --clean
+          allure generate allure-results -o allure-report --clean --single-file
 
       - name: Upload Allure report
         if: always()
@@ -82,17 +85,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: allure-report-${{ github.run_number }}
-          path: allure-report
+          path: allure-report/index.html
           if-no-files-found: error
-
-      - name: Upload Allure results
-        if: always()
-        id: upload_results
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results-${{ github.run_number }}
-          path: allure-results
-          if-no-files-found: ignore
 
       - name: Publish report link
         if: always()
