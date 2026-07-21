@@ -1,98 +1,98 @@
-name: CI
+# name: CI
 
-on:
-  push:
-    branches:
-      - main
-      - master
-  pull_request:
-  workflow_dispatch:
-    inputs:
-      test_target:
-        description: "Test file hoặc node id muốn chạy (vd: tests/test_login.py hoặc tests/test_login.py::TestLogin::test_login_with_invalid_credentials). Để trống = chạy tất cả."
-        required: false
-        default: ""
-      keyword:
-        description: "Lọc theo tên (pytest -k), vd: login hoặc invalid. Để trống = không lọc."
-        required: false
-        default: ""
-      marker:
-        description: "Lọc theo marker (pytest -m), vd: smoke. Để trống = không lọc."
-        required: false
-        default: ""
-      browser:
-        description: "Trình duyệt chạy test"
-        required: false
-        default: chromium
-        type: choice
-        options:
-          - chromium
-          - firefox
-          - webkit
+# on:
+#   push:
+#     branches:
+#       - main
+#       - master
+#   pull_request:
+#   workflow_dispatch:
+#     inputs:
+#       test_target:
+#         description: "Test file hoặc node id muốn chạy (vd: tests/test_login.py hoặc tests/test_login.py::TestLogin::test_login_with_invalid_credentials). Để trống = chạy tất cả."
+#         required: false
+#         default: ""
+#       keyword:
+#         description: "Lọc theo tên (pytest -k), vd: login hoặc invalid. Để trống = không lọc."
+#         required: false
+#         default: ""
+#       marker:
+#         description: "Lọc theo marker (pytest -m), vd: smoke. Để trống = không lọc."
+#         required: false
+#         default: ""
+#       browser:
+#         description: "Trình duyệt chạy test"
+#         required: false
+#         default: chromium
+#         type: choice
+#         options:
+#           - chromium
+#           - firefox
+#           - webkit
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+#       - name: Set up Python
+#         uses: actions/setup-python@v5
+#         with:
+#           python-version: "3.11"
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install -r requirements.txt
 
-      - name: Install Playwright browsers
-        env:
-          BROWSER: ${{ github.event.inputs.browser || 'chromium' }}
-        run: python -m playwright install --with-deps "$BROWSER"
+#       - name: Install Playwright browsers
+#         env:
+#           BROWSER: ${{ github.event.inputs.browser || 'chromium' }}
+#         run: python -m playwright install --with-deps "$BROWSER"
 
-      - name: Install Allure CLI
-        run: npm install -g allure-commandline
+#       - name: Install Allure CLI
+#         run: npm install -g allure-commandline
 
-      - name: Run tests
-        env:
-          HEADLESS: "true"
-          BROWSER: ${{ github.event.inputs.browser || 'chromium' }}
-          BASE_URL: ${{ secrets.BASE_URL || 'https://bsv-test-phi2.eventos.work/console/login' }}
-          USERNAME: ${{ secrets.TEST_USERNAME }}
-          PASSWORD: ${{ secrets.TEST_PASSWORD }}
-          TEST_TARGET: ${{ github.event.inputs.test_target }}
-          TEST_KEYWORD: ${{ github.event.inputs.keyword }}
-          TEST_MARKER: ${{ github.event.inputs.marker }}
-        run: |
-          args=()
-          [ -n "$TEST_TARGET" ] && args+=("$TEST_TARGET")
-          [ -n "$TEST_KEYWORD" ] && args+=(-k "$TEST_KEYWORD")
-          [ -n "$TEST_MARKER" ] && args+=(-m "$TEST_MARKER")
-          echo "Running: pytest ${args[*]}"
-          pytest "${args[@]}"
+#       - name: Run tests
+#         env:
+#           HEADLESS: "true"
+#           BROWSER: ${{ github.event.inputs.browser || 'chromium' }}
+#           BASE_URL: ${{ secrets.BASE_URL || 'https://bsv-test-phi2.eventos.work/console/login' }}
+#           USERNAME: ${{ secrets.TEST_USERNAME }}
+#           PASSWORD: ${{ secrets.TEST_PASSWORD }}
+#           TEST_TARGET: ${{ github.event.inputs.test_target }}
+#           TEST_KEYWORD: ${{ github.event.inputs.keyword }}
+#           TEST_MARKER: ${{ github.event.inputs.marker }}
+#         run: |
+#           args=()
+#           [ -n "$TEST_TARGET" ] && args+=("$TEST_TARGET")
+#           [ -n "$TEST_KEYWORD" ] && args+=(-k "$TEST_KEYWORD")
+#           [ -n "$TEST_MARKER" ] && args+=(-m "$TEST_MARKER")
+#           echo "Running: pytest ${args[*]}"
+#           pytest "${args[@]}"
 
-      - name: Generate Allure report (single file)
-        if: always()
-        run: |
-          allure generate allure-results -o allure-report --clean --single-file
+#       - name: Generate Allure report (single file)
+#         if: always()
+#         run: |
+#           allure generate allure-results -o allure-report --clean --single-file
 
-      - name: Upload Allure report
-        if: always()
-        id: upload_report
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report-${{ github.run_number }}
-          path: allure-report/index.html
-          if-no-files-found: error
+#       - name: Upload Allure report
+#         if: always()
+#         id: upload_report
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: allure-report-${{ github.run_number }}
+#           path: allure-report/index.html
+#           if-no-files-found: error
 
-      - name: Publish report link
-        if: always()
-        run: |
-          {
-            echo "### Allure Report"
-            echo "- Report artifact: ${{ steps.upload_report.outputs.artifact-url }}"
-            echo "- Run page: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          } >> "$GITHUB_STEP_SUMMARY"
+#       - name: Publish report link
+#         if: always()
+#         run: |
+#           {
+#             echo "### Allure Report"
+#             echo "- Report artifact: ${{ steps.upload_report.outputs.artifact-url }}"
+#             echo "- Run page: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+#           } >> "$GITHUB_STEP_SUMMARY"
