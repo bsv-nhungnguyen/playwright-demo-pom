@@ -87,12 +87,3 @@ jobs:
           name: allure-report-${{ github.run_number }}
           path: allure-report/index.html
           if-no-files-found: error
-
-      - name: Publish report link
-        if: always()
-        run: |
-          {
-            echo "### Allure Report"
-            echo "- Report artifact: ${{ steps.upload_report.outputs.artifact-url }}"
-            echo "- Run page: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          } >> "$GITHUB_STEP_SUMMARY"
